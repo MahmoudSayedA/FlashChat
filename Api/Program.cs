@@ -1,7 +1,9 @@
+using Api.Application.Abstractions;
 using Api.Application.Auth.Interfaces;
 using Api.Data;
 using Api.Entities;
 using Api.Options;
+using Api.Repositories;
 using Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -19,6 +21,7 @@ builder.Services.AddControllers();
 // register custom services
 builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 
 // register swagger
