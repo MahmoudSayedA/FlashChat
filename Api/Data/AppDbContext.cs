@@ -5,9 +5,13 @@ using System.Reflection;
 
 namespace Api.Data
 {
-    public class AppDbContext : IdentityDbContext<Entities.User, Entities.Role, int>
+    public class AppDbContext : IdentityDbContext<User, Role, int>
     {
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<PrivateChat> PrivateChats { get; set; }
+        public DbSet<GroupChat> GroupChats { get; set; }
+        public DbSet<GroupChatMember> GroupChatMembers { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
