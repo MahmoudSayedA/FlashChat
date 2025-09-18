@@ -1,9 +1,13 @@
+using Api.Application.Auth.Interfaces;
 using Api.Data;
 using Api.Entities;
+using Api.Options;
+using Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,11 +16,42 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+// register custom services
+builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+
 // register swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(opt =>
+builder.Services.AddSwaggerGen(c =>
 {
-    opt.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    var securityRequirement = new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    };
+
+    c.AddSecurityRequirement(securityRequirement);
+
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
         Title = "API Title",
         Description = "A simple API",
@@ -54,6 +89,7 @@ builder.Services.AddIdentity<User, Role>(options =>
                  .AddApiEndpoints();
 
 // Configure jwt authentication
+
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]?? string.Empty);
 
@@ -75,6 +111,12 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
+
+// register http context accessor
+builder.Services.AddHttpContextAccessor();
+
+
+
 
 var app = builder.Build();
 
