@@ -46,6 +46,27 @@ namespace Api.Controllers
             return Ok(privateChat);
         }
 
+        [HttpGet("with/{userId}")]
+        public async Task<IActionResult> GetWithUser(int userId)
+        {
+            var currentUserId = currentUserService.UserId ?? 0;
+            if (userId == currentUserId)
+            {
+                return BadRequest("Cannot create a private chat with yourself.");
+            }
+
+            var privateChat = await dbContext.Set<PrivateChat>()
+                .Where(pc => (pc.User1Id == currentUserId && pc.User2Id == userId) ||
+                             (pc.User1Id == userId && pc.User2Id == currentUserId))
+                .FirstOrDefaultAsync();
+
+            if (privateChat == null)
+            {
+                return NotFound();
+            }
+            return Ok(privateChat);
+        }
+
         // POST api/<PrivateChatsController>
         [HttpPost]
         public async Task<IActionResult> Add([FromBody] string email)

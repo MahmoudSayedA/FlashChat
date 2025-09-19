@@ -18,9 +18,9 @@ namespace Api.Controllers
         ICurrentUserService currentUserService
         ) : ControllerBase
     {
-        [HttpGet]
 
-        public async Task<IActionResult> Get()
+        [HttpGet]
+        public async Task<IActionResult> GetMyGroups()
         {
             var userId = currentUserService.UserId ?? 0;
             // get all group chats where the user is a member
@@ -59,8 +59,63 @@ namespace Api.Controllers
             {
                 return Forbid();
             }
-
             return Ok(groupChat);
+        }
+
+        [HttpGet("{id}/Members")]
+        public async Task<IActionResult> GetMembers(int id)
+        {
+            var userId = currentUserService.UserId ?? 0;
+            var groupChat = await dbContext.Set<GroupChat>()
+                .FindAsync(id);
+            if (groupChat == null)
+            {
+                return NotFound();
+            }
+            // get group members
+            var members = await dbContext.Set<GroupChatMember>()
+                .Where(gcm => gcm.GroupChatId == id)
+                .Include(gcm => gcm.User)
+                .Select(gcm => new
+                {
+                    gcm.User!.Id,
+                    gcm.User.Email,
+                    gcm.Role
+                })
+                .ToListAsync();
+            // check if the user is a member
+            if (!members.Any(m => m.Id == userId))
+            {
+                return Forbid();
+            }
+            return Ok(members);
+        }
+
+        [HttpGet("{id}/Messages")]
+        public async Task<IActionResult> GetMessages(int id)
+        {
+            var userId = currentUserService.UserId ?? 0;
+            var groupChat = await dbContext.Set<GroupChat>()
+                .FindAsync(id);
+            if (groupChat == null)
+                return NotFound();
+
+            // get group members
+            var membersIds = await dbContext.Set<GroupChatMember>()
+                .Where(gcm => gcm.GroupChatId == id)
+                .Select(gcm => gcm.UserId)
+                .ToListAsync();
+
+            // check if the user is a member
+            if (!membersIds.Contains(userId))
+                return Forbid();
+
+            var messages = await dbContext.Set<Message>()
+                .Where(m => m.ChatId == id)
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+
+            return Ok(messages);
         }
 
         // POST api/<GroupChatsController>
