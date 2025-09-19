@@ -17,6 +17,8 @@ namespace Api.Services
             ? userId 
             : null;
         public string? UserName => _httpContextAccessor.HttpContext?.User?.Identity?.Name;
+        public string? Email => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email);
         public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
+
     }
 }
