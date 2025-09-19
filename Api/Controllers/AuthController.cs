@@ -16,12 +16,6 @@ namespace Api.Controllers
             _authService = authService;
         }
 
-        [HttpGet("/")]
-        public IActionResult Test()
-        {
-            return Ok("Api is running.");
-        }
-
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
