@@ -19,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // register custom services
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
@@ -118,6 +119,8 @@ builder.Services.AddAuthentication(options =>
 // register http context accessor
 builder.Services.AddHttpContextAccessor();
 
+// register signalR
+builder.Services.AddSignalR();
 
 
 

@@ -1,4 +1,6 @@
-﻿namespace Api.Application.Abstractions
+﻿using Microsoft.EntityFrameworkCore.Storage;
+
+namespace Api.Application.Abstractions
 {
     public interface IRepository<T> where T : class
     {
@@ -10,6 +12,6 @@
         Task DeleteRangeAsync(IEnumerable<T> entities);
         Task SaveChangesAsync();
         IQueryable<T> Query();
-
+        Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
     }
 }

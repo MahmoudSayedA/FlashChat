@@ -1,11 +1,13 @@
-﻿using Api.Entities;
+﻿using Api.Application.Abstractions;
+using Api.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Reflection;
 
 namespace Api.Data
 {
-    public class AppDbContext : IdentityDbContext<User, Role, int>
+    public class AppDbContext : IdentityDbContext<User, Role, int> , IDbContext
     {
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Message> Messages { get; set; }
@@ -27,6 +29,11 @@ namespace Api.Data
         {
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(builder);
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+        {
+            return await Database.BeginTransactionAsync(cancellationToken);
         }
     }
 }
